@@ -6,6 +6,7 @@
 import rospy
 import numpy
 import time
+import math
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 #from sonar import SonarArray 
@@ -19,6 +20,10 @@ init_min = 999
 
 def callback(sensor_data):
 	base_data = Twist()
+	forward_data = sensor_data.ranges[LASER_RANGE/4:3*LASER_RANGE/4]
+	forward_data = filter(lambda v: v==v, forward_data)
+
+#forward_data = forward_data[math.isnan(forward_data)]
 	forward_dis = numpy.min(sensor_data.ranges[LASER_RANGE/4:3*LASER_RANGE/4])
 #right_dis = numpy.min(sensor_data.ranges[0:LASER_RANGE/3])
 #left_dis = numpy.min(sensor_data.ranges[LASER_RANGE-LASER_RANGE/3:LASER_RANGE])
