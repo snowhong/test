@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+import rospy
+import numpy
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+#from sonar import SonarArray 
+INIT = 1
+SAFE_FORWARD = 0.3
+SAFE_LEFT = 0.3
+SAFE_RIGHT= 0.3
+LASER_RANGE = 360
+
+def callback(sensor_data):
+	if INIT == 1:
+		init_min = min(sensor_data.ranges)
+		global INIT
+		print(len(sensor_data.ranges))
+		INIT = 0
+	base_data = Twist()
+	forward_dis = sensor_data.ranges[LASER_RANGE/2]
+	left_dis = numpy.min(sensor_data.ranges[0:LASER_RANGE/3])
+	right_dis = numpy.min(sensor_data.ranges[LASER_RANGE-LASER_RANGE/3:LASER_RANGE])
+
+	if forward_dis <= SAFE_FORWARD: #and left_dis > SAFE_LEFT and right_dis > SAFE_RIGHT:
+		base_data.linear.x = 0
+	elif left_dis <= SAFE_LEFT:
+		base_data.angular.z = 1
+	elif right_dis <= SAFE_RIGHT:
+		base_data.angular.z = -1
+##when a laser value change definately, it find a hole
+#print left_dis
+	else:
+		base_data.linear.x = 0.2
+	pub.publish(base_data)
+
+if __name__ == '__main__':
+	rospy.init_node('wall_mover')
+	rospy.Subscriber('/p3dx/laser/scan', LaserScan, callback)
+	pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
+	rospy.spin()
