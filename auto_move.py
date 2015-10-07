@@ -6,27 +6,31 @@ from sensor_msgs.msg import LaserScan
 #from sonar import SonarArray 
 INIT = 1
 SAFE_FORWARD = 0.3
-SAFE_LEFT = 0.3
-SAFE_RIGHT= 0.3
+SAFE_LEFT = 0.5
+SAFE_RIGHT= 0.5
 LASER_RANGE = 360
 
 def callback(sensor_data):
 	if INIT == 1:
-		init_min = min(sensor_data.ranges)
+		init_max = max(sensor_data.ranges)
 		global INIT
 		print(len(sensor_data.ranges))
 		INIT = 0
 	base_data = Twist()
 	forward_dis = sensor_data.ranges[LASER_RANGE/2]
-	left_dis = numpy.min(sensor_data.ranges[0:LASER_RANGE/3])
-	right_dis = numpy.min(sensor_data.ranges[LASER_RANGE-LASER_RANGE/3:LASER_RANGE])
+	right_dis = numpy.min(sensor_data.ranges[0:LASER_RANGE/3])
+	left_dis = numpy.min(sensor_data.ranges[LASER_RANGE-LASER_RANGE/3:LASER_RANGE])
 
 	if forward_dis <= SAFE_FORWARD: #and left_dis > SAFE_LEFT and right_dis > SAFE_RIGHT:
 		base_data.linear.x = 0
+		if left_dis > SAFE_LEFT and right_dis > SAFE_RIGHT:
+			base_data.angular.z = 0.3
+			print ('left_distance:', left_dis )
+			print ('right_distance:', right_dis )
 	elif left_dis <= SAFE_LEFT:
-		base_data.angular.z = 1
+		base_data.angular.z = -0.2
 	elif right_dis <= SAFE_RIGHT:
-		base_data.angular.z = -1
+		base_data.angular.z = 0.22
 ##when a laser value change definately, it find a hole
 #print left_dis
 	else:

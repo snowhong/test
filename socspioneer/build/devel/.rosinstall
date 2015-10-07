@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/robot/Robot/src/socspioneer/build/devel/setup.sh
