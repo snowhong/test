@@ -1,6 +1,6 @@
 #1.detect the signifacant change on the laser left value, judge that is the door or a cave
-#2. change the strage when left_dir is over SAFE_LEFT
-#
+#2. change the strage when left_dir is over SAFE_LEFT. Is safe flag ok?
+#3. because it want keep left so it turn left from start
 #
 #!/usr/bin/env python
 import rospy
@@ -17,6 +17,8 @@ SAFE_RIGHT= 0.3
 LASER_RANGE = 360
 corner = 0
 init_min = 999
+PRE_LEFT_LASER = 0
+LEFT_LIMIT = 1
 
 def callback(sensor_data):
 	base_data = Twist()
@@ -31,6 +33,7 @@ def callback(sensor_data):
 	left_dis = sensor_data.ranges[LASER_RANGE-1]
 	global corner
 	global init_min 
+	global PRE_LEFT_LASER
 
 	if INIT == 1:
 		#Get The Closet Point and Go There!
@@ -50,6 +53,7 @@ def callback(sensor_data):
 			base_data.linear.x = -0.2
 			time.sleep(0.1)
 			pub.publish(base_data)
+		PRE_LEFT_LASER = left_dis
 		INIT = 0
 #print ('left_distance:', left_dis )
 
@@ -60,13 +64,13 @@ def callback(sensor_data):
 				#Turn Right
 				base_data.angular.z = -0.1
 				corner =  1
-				print "left safe!", corner
+#print "left safe!", corner
 			if right_dis <= SAFE_RIGHT:
 				#Turn Left
 				base_data.angular.z = 0.1
 				if corner == 1:
 					corner =2
-				print "right safe!",corner
+#print "right safe!",corner
 		if corner == 2:
 			if left_dis <= SAFE_LEFT and right_dis <= SAFE_RIGHT:
 				print "avoid corner stuck!"
@@ -79,19 +83,32 @@ def callback(sensor_data):
 		if left_dis > SAFE_LEFT  and right_dis > SAFE_RIGHT:
 		#Just Give it a Direction(In this case we want robot keep the SAFE_LEFT value, that is to say, make the left side of robot keep a safe distance from the wall)
 			base_data.angular.z = -0.1
-			print "clear corner value"
+#print "clear corner value"
 			corner = 0
 			
 	else:
-		base_data.linear.x = 0.2
+		left_change = numpy.fabs(left_dis - PRE_LEFT_LASER)
+		if(left_change > LEFT_LIMIT):
+			if(left_dis > SAFE_LEFT and right_dis > SAFE_RIGHT):
+				print 'left_change:',left_change
+				base_data.linear.x = 0
+				base_data.angular.z = 0.2
+				pub.publish(base_data)
+				return
+			else:
+				base_data.linear.x = 0.2
 
-		if left_dis <= SAFE_LEFT:
-			base_data.angular.z = -0.1
-		elif right_dis <= SAFE_RIGHT:
-			base_data.angular.z = 0.1
-		if left_dis > SAFE_LEFT + 0.2:
-			base_data.angular.z = 0.1
+		else:	
+			base_data.linear.x = 0.2
 
+			if left_dis <= SAFE_LEFT:
+				base_data.angular.z = -0.1
+			elif right_dis <= SAFE_RIGHT:
+				base_data.angular.z = 0.1
+			if left_dis > SAFE_LEFT + 0.2:
+				base_data.angular.z = 0.1
+
+	PRE_LEFT_LASER = left_dis
 	pub.publish(base_data)
 
 if __name__ == '__main__':
