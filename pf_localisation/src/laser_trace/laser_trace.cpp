@@ -1,6 +1,6 @@
 #include <boost/python/module.hpp>
 #include <boost/python/def.hpp>
-#include <numpy/arrayobject.h>
+#include "/usr/local/lib/python2.7/site-packages/numpy/core/include/numpy/arrayobject.h"
 #include <math.h>
 
 #include <iostream>
