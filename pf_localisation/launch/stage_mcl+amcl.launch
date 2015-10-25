@@ -3,11 +3,10 @@
 
     <node name="map_server" pkg="map_server" type="map_server" args="$(find socspioneer)/lgfloor.yaml"/>
 
-
     <node name="stage_ros" pkg="stage_ros" type="stageros" args="$(find socspioneer)/lgfloor.world"/>
 
     <node name="rviz" pkg="rviz" type="rviz"/>
-    <!--<node name="amcl" pkg="amcl" type="amcl"/>-->
 
-    <!--<node name="pf" pkg="pf_localisation" type="node.py"/>-->
+    <node name="amcl" pkg="amcl" type="amcl" args="scan:=base_scan"/>
+
 </launch>

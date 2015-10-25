@@ -8,7 +8,7 @@ Converted to Python
 
 import rospy
 
-from geometry_msgs.msg import (PoseWithCovarianceStamped, PoseArray,
+from geometry_msgs.msg import (PoseWithCovarianceStamped, PoseArray, Pose,
                                Quaternion,  Transform,  TransformStamped )
 from tf.msg import tfMessage
 from tf import transformations
@@ -32,6 +32,21 @@ class PFLocaliserBase(object):
     INIT_HEADING = 0 	# Initial orientation of robot (radians)
     
     def __init__(self):
+        #POSE RECORDE
+
+        self.pre_st_x=0
+        self.pre_st_y=0
+        self.pre_st_w=0
+        
+        self._pre_pose = Pose()
+        self._pre_pose.position.x = 0
+        self._pre_pose.position.y = 0
+        self._pre_pose.position.z = 0
+        self._pre_pose.orientation.x = 0
+        self._pre_pose.orientation.y = 0
+        self._pre_pose.orientation.z = 0
+        self._pre_pose.orientation.w = 0
+
         # Initialise fields
         self.estimatedpose =  PoseWithCovarianceStamped()
         self.occupancy_map = OccupancyGrid()

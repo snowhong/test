@@ -9,8 +9,7 @@ from util import rotateQuaternion, getHeading
 import random
 from time import time
 import datetime
-import math
-#from __future__import print_function
+from tf.transformations import euler_from_quaternion
 
 
 #-------------- PFLocaliser Class Methods-------------#
@@ -24,7 +23,7 @@ class PFLocaliser(PFLocaliserBase):
         super(PFLocaliser, self).__init__()
 
         #Set motion model parameters
-        self.ODOM_ROTATION_NOISE = 0.05
+        self.ODOM_ROTATION_NOISE = 45
         self.ODOM_TRANSLATION_NOISE = 0.014
         self.ODOM_DRIFT_NOISE = 0.006
 
@@ -66,6 +65,7 @@ class PFLocaliser(PFLocaliserBase):
 
         cloud_pose = self.particlecloud.poses
 
+        print(euler_from_quaternion([self.particlecloud.poses[3].orientation.x,self.particlecloud.poses[3].orientation.y,self.particlecloud.poses[3].orientation.z,self.particlecloud.poses[3].orientation.w]))
     ##---------------------------##
     ##-----------WEIGHT----------##
     ##---------------------------##
@@ -91,7 +91,6 @@ class PFLocaliser(PFLocaliserBase):
             weight_over_sum = particle_weight/sum_weights
             sum_count+= weight_over_sum
             cumulate_weight.extend([sum_count])    
-
     #print cumulate_weight
     ##-----------------------##
     ##---------UPDATE--------##
@@ -145,8 +144,6 @@ class PFLocaliser(PFLocaliserBase):
 
         #iterate over each particle extracting the relevant
         #averages
-
-        normalise_pose = [] 
         for particle in self.particlecloud.poses:
             x += particle.position.x
             y += particle.position.y
@@ -155,11 +152,6 @@ class PFLocaliser(PFLocaliserBase):
             oriy += particle.orientation.y
             oriz += particle.orientation.z
             oriw += particle.orientation.w
-            
-            #normalise_pose.extend([particle])
-            normalise_pose.append(particle)
-
-
 
         count = len(self.particlecloud.poses)
 
@@ -176,38 +168,5 @@ class PFLocaliser(PFLocaliserBase):
         pose.orientation.z = oriz/count
         pose.orientation.w = oriw/count
 
-        ##
-        sum_x = 0
-        sum_y = 0
-        sum_w = 0
-        for particle in self.particlecloud.poses:
-            sum_x = sum_x + pow(particle.position.x - pose.position.x, 2)
-            sum_y = sum_y + pow(particle.position.y - pose.position.y, 2)
-            sum_w = sum_w + pow(particle.orientation.w - pose.orientation.w, 2)
-
-        standard_dev_x=math.sqrt(sum_x/count)
-        standard_dev_y=math.sqrt(sum_y/count)
-        standard_dev_w=math.sqrt(sum_w/count)
-        print standard_dev_x, standard_dev_y, standard_dev_w
-
-        print self.pre_st_x , self.pre_st_y , self.pre_st_w 
-        print self.pre_st_x - float(standard_dev_x), self.pre_st_y - float(standard_dev_y), self.pre_st_w - float(standard_dev_w)
-
-        self.pre_st_x=standard_dev_x
-        self.pre_st_y=standard_dev_y
-        self.pre_st_w=standard_dev_w
-
-        print pose.position.x - self._pre_pose.position.x
-        if (pose.position.x - self._pre_pose.position.x) > 0.2:
-            with open("./pose.txt","a+") as myfile:
-                #now = rospy.get_rostime()
-                time = datetime.datetime.now() 
-                myfile.write("**********************time:")
-                #myfile.write(str(now.secs)+"."+str(now.nsecs)+"\n")
-                myfile.write(str(time)+"\n")
-    
-                myfile.write(str(pose)+"\n")
-                myfile.close()
-
-        self._pre_pose = pose
+#print(pose)
         return pose
