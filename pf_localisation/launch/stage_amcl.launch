@@ -1,6 +1,8 @@
 <launch>
+    <node name="odom_to_map" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 1 /map /odom 100"/>
 
     <node name="map_server" pkg="map_server" type="map_server" args="$(find socspioneer)/lgfloor.yaml"/>
+
 
     <node name="stage_ros" pkg="stage_ros" type="stageros" args="$(find socspioneer)/lgfloor.world"/>
 
