@@ -5,6 +5,7 @@ project(pcl_test)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 include_directories(include /usr/local/include/ni)
+
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
